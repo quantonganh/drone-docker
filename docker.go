@@ -41,6 +41,7 @@ type (
 		Name        string   // Docker build using default named tag
 		Dockerfile  string   // Docker build Dockerfile
 		Context     string   // Docker build context
+		Labels      []string // Docker build labels
 		Tags        []string // Docker build tags
 		Args        []string // Docker build args
 		ArgsEnv     []string // Docker build args from env
@@ -114,6 +115,14 @@ func (p Plugin) Exec() error {
 	cmds = append(cmds, commandInfo())    // docker info
 
 	cmds = append(cmds, commandBuild(p.Build)) // docker build
+
+	for _, label := range p.Build.Labels {
+		cmds = append(cmds, commandLabel(p.Build, label)) // docker label
+
+		if p.Dryrun == false {
+			cmds = append(cmds, commandPush(p.Build, label)) // docker push
+		}
+	}
 
 	for _, tag := range p.Build.Tags {
 		cmds = append(cmds, commandTag(p.Build, tag)) // docker tag
@@ -263,6 +272,17 @@ func hasProxyBuildArg(build *Build, key string) bool {
 	}
 
 	return false
+}
+
+// helper function to create the docker label command.
+func commandLabel(build Build, label string) *exec.Cmd {
+	var (
+		source = build.Name
+		target = fmt.Sprintf("%s:%s", build.Repo, label)
+	)
+	return exec.Command(
+		dockerExe, "label", source, target,
+	)
 }
 
 // helper function to create the docker tag command.

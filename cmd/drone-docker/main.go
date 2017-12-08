@@ -120,6 +120,12 @@ func main() {
 			EnvVar: "PLUGIN_CONTEXT",
 		},
 		cli.StringSliceFlag{
+			Name:     "labels",
+			Usage:    "build labels",
+			EnvVar:   "PLUGIN_LABEL,PLUGIN_LABELS",
+			FilePath: ".labels",
+		},
+		cli.StringSliceFlag{
 			Name:     "tags",
 			Usage:    "build tags",
 			Value:    &cli.StringSlice{"latest"},
@@ -224,6 +230,7 @@ func run(c *cli.Context) error {
 			Name:        c.String("commit.sha"),
 			Dockerfile:  c.String("dockerfile"),
 			Context:     c.String("context"),
+			Labels:      c.StringSlice("labels"),
 			Tags:        c.StringSlice("tags"),
 			Args:        c.StringSlice("args"),
 			ArgsEnv:     c.StringSlice("args-from-env"),
